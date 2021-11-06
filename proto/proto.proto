@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/JSansana/SDT2F/proto";
+
+//################ POZO JUGADOR LIDER ################
+//Mensajes Jugador a Lider
+message Jugador_A_Lider_Pozo{   
+    int32 Solicitud = 1;
+}
+
+message Lider_A_Jugador_Pozo{
+    int32 Monto_Acumulado = 1;
+}
+
+//################ ETAPA 1 ################
+//"En cada ronda se debe verificar cuales jugadores eligieron un número igual o mayor al del Líder. Quienes lo hayan hecho quedan eliminados del juego."
+message Jugador_A_Lider_E1_Mayor{
+    repeated int32 Jugadas = 1;
+}
+message Lider_A_Jugador_E1_Mayor{
+    repeated int32 Eliminados = 1;
+}
+
+//"Todos los jugadores que no logren llegar a 21 antes de las 4 rondas serán eliminados"
+message Jugador_A_Lider_E1_21{
+    repeated int32 Puntajes = 1;
+}
+message Lider_A_Jugador_E1_21{
+    repeated int32 Eliminados = 1;
+}
+
+//Fin de la etapa, solicitud de entrada a la siguiente etapa, el lider indica el inicio de la siguiente etapa
+message Jugador_A_Lider_Fin{
+    int32 Etapa_Actual = 1;
+}
+message Lider_A_Jugador_Fin{
+    int32 Respuesta = 1;
+}
+
+//################ ETAPA 2 ################
+//"En caso de que el número de jugadores sea impar, se deberá escoger un jugador al azar y eliminarlo del juego"
+message Jugador_A_Lider_Eliminar{
+    int32 Eliminado = 1;
+}
+message Lider_A_Jugador_Eliminar{
+    int32 Respuesta = 1;
+}
+
+//El equipo que logre que la suma de sus valores tenga la misma paridad que el número elegido por el Líder pasará a la siguiente ronda y el otro equipo será eliminado.
+message Jugador_A_Lider_E2_Cuerda{
+    int32 Puntaje1 = 1;
+    int32 Puntaje2 = 2;
+    repeated int32 Equipo1 = 4;
+    repeated int32 Equipo2 = 5;
+}
+message Lider_A_Jugador_E2_Cuerda{
+    repeated int32 Eliminados = 1;
+}
+
+//Fin de etapa 2, solicitud de entrada a etapa 3, el lider indica el inicio de la siguiente etapa
+//SE RECICLA CODIGO
+
+//################ ETAPA 3 ################
+message Jugador_A_Lider_E3{
+    repeated int32 Jugadas = 1;
+    repeated int32 Equipos = 2;
+}
+
+message Lider_A_Jugador_E3{
+    repeated int32 Eliminados = 1;
+}
+
+//################ LIDER A POZO ################
+message Lider_A_Pozo{
+    int32 Solicitud = 1;
+}
+message Pozo_A_Lider{
+    int32 Monto_Acumulado = 1;
+}
+
+message ArregloLider_A_Pozo{
+    repeated int32 Muertos = 1;
+    int32 Etapa = 2;
+}
+message ArregloPozo_A_Lider {
+    int32 Respuesta = 1;
+}
+//################LIDER - NAMENODE ###############
+
+message Lider_A_Namenode{
+    repeated int32 Jugadas = 1; // Las jugadas van en la posición del jugador en el arreglo
+    int32 Etapa = 2; 
+}
+
+message Namenode_A_Lider{
+    int32 Respuesta = 1; //un 1 si registra al jugador, un 0 si no  
+}
+
+//###########NAMENODE - DATANODE###################
+
+message Namenode_A_Datanode{
+
+    int32 Jugada = 1;
+    int32 Jugador = 2;
+    int32 Etapa = 3;
+}
+
+message Datanode_A_Namenode{
+    string IP = 1;   
+}
+
+service Comunicacion_Jugador_Lider {
+    //rpc Metodo(Request cliente) returns (respuesta servidor)
+    //Etapa 1    (Arreglo con jugadas)     returns     (Arreglo con muertos) por cada ronda
+    rpc Etapa1_Mayor(Jugador_A_Lider_E1_Mayor) returns (Lider_A_Jugador_E1_Mayor) {}
+    rpc Cuatro(Jugador_A_Lider_E1_21) returns (Lider_A_Jugador_E1_21) {}
+    
+    //Etapa 2 (Arreglo con jugadas, Arreglo con equipos) returns (Arreglo con muertos)
+    rpc Etapa2 (Jugador_A_Lider_E2_Cuerda) returns (Lider_A_Jugador_E2_Cuerda) {}
+    
+    //Etapa3 (Arreglo con jugadas, Arreglo con equipos) returns (Arreglo con muertos)
+    rpc Etapa3 (Jugador_A_Lider_E3) returns (Lider_A_Jugador_E3) {}
+
+    //Servicios transversales entre etapas
+    rpc Fin_Etapa(Jugador_A_Lider_Fin) returns (Lider_A_Jugador_Fin) {}
+    rpc Eliminar(Jugador_A_Lider_Eliminar) returns (Lider_A_Jugador_Eliminar) {}
+
+    //Solicitud del Pozo, por parte del Jugador al Lider
+    rpc Pozo_Jugador(Jugador_A_Lider_Pozo) returns (Lider_A_Jugador_Pozo) {}
+}
+
+service Comunicacion_Lider_Pozo {
+    
+    rpc Pozo_Lider(Lider_A_Pozo) returns (Pozo_A_Lider) {}
+    rpc Arreglo_Pozo(ArregloLider_A_Pozo) returns(ArregloPozo_A_Lider) {}
+}
+
+service Comunicacion_Lider_Namenode {
+    
+    rpc Enviar_Jugada(Lider_A_Namenode) returns (Namenode_A_Lider) {}
+}
+
+service Comunicacion_Namenode_Datanode {
+    
+    rpc Guardar_Jugada(Namenode_A_Datanode) returns (Datanode_A_Namenode){}
+}
