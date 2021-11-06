@@ -1,7 +1,7 @@
 ---Laboratorio 1 Sistemas Distribuidos---
 
 Integrantes: GRUPO 5
-	+Marcelo Cabezas Galvez
+	+Marcelo Cabezas Galvez : 201704546-9
 	+Alvaro Ortiz Hermosilla :201810523-6
 	+José Sansana Parra : 201773535-K
 
